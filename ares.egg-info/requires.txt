@@ -1,3 +1,7 @@
-selenium>=4.10.0
-webdriver-manager
+pandas
+numpy
+scikit-learn
+selenium
 beautifulsoup4
+pytest
+setuptools

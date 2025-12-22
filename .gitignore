@@ -1,0 +1,15 @@
+# Python 垃圾檔
+__pycache__/
+*.py[cod]
+
+# 資料與模型 (除了我們特別指定的，一律不傳)
+data/
+models/
+*.pkl
+*.csv
+*.xlsx
+
+# 環境設定 (包含密碼，絕對不能傳)
+.env
+
+local_test/

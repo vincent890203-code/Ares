@@ -1,9 +1,18 @@
 Metadata-Version: 2.1
 Name: ares
 Version: 0.1.0
-Summary: A personalized web scraping toolkit aiming for Google-level quality.
+Summary: An automated, modularized ML pipeline for biomedical data mining.
 Author: Yuan-Chen Kuo
-Requires-Python: >=3.8
-Requires-Dist: selenium>=4.10.0
-Requires-Dist: webdriver-manager
+Author-email: vincent890203@gmail.com
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Requires-Python: >=3.9
+Requires-Dist: pandas
+Requires-Dist: numpy
+Requires-Dist: scikit-learn
+Requires-Dist: selenium
 Requires-Dist: beautifulsoup4
+Requires-Dist: pytest
+Requires-Dist: setuptools

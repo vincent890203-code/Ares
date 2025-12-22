@@ -1,0 +1,40 @@
+# 1. 幫這個自動化流程取個名字
+name: Ares System CI
+
+# 2. 設定觸發時機 (Trigger)
+# 當有人 Push 程式碼到 main 分支，或是對 main 發起 Pull Request 時，機器人就會啟動
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 3. 定義任務 (Jobs)
+jobs:
+  build-and-test:
+    # 指定這台雲端電腦的作業系統 (使用最新版 Ubuntu Linux)
+    runs-on: ubuntu-latest
+
+    # 4. 定義具體步驟 (Steps)
+    steps:
+    # 步驟 A: 把您的程式碼從 GitHub 倉庫抓下來
+    - uses: actions/checkout@v3
+
+    # 步驟 B: 設定 Python 環境 (這裡設為 3.9，您可以改成您習慣的版本)
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    # 步驟 C: 安裝依賴套件
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest  # 安裝測試工具
+        pip install .       # 安裝您的 Ares 系統 (會讀取 setup.py)
+
+    # 步驟 D: 開始跑測試
+    # 這行指令會自動去尋找 tests/ 資料夾底下所有開頭是 test_ 的檔案並執行
+    - name: Run tests with pytest
+      run: |
+        pytest

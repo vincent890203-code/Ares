@@ -34,7 +34,7 @@ Ares-Project/
 │   └── workflows/           # 未來放 CI/CD (GitHub Actions)
 │       └── tests.yml
 │
-├── ares/                    # [主程式包] 所有的核心程式碼都在這
+├── Ares/                    # [主程式包] 所有的核心程式碼都在這
 │   ├── __init__.py          # 讓 ares 變成一個 package (就是您之前設定 __all__ 的地方)
 │   ├── spider/              # [情報官]
 │   │   ├── __init__.py
