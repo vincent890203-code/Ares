@@ -5,3 +5,5 @@ selenium
 beautifulsoup4
 pytest
 setuptools
+webdriver-manager
+selenium
