@@ -7,4 +7,4 @@ pytest
 setuptools
 webdriver-manager
 selenium
-matplotlib
+seaborn
