@@ -30,8 +30,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest  # 安裝測試工具
-        pip install .       # 安裝您的 Ares 系統 (會讀取 setup.py)
+        # 1. 強制安裝清單中的所有套件 (包含 webdriver-manager)
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # 2. 安裝測試必備工具
+        pip install pytest pytest-cov
+        # 3. 以可編輯模式安裝您的 Ares 系統 (確保路徑被註冊)
+        pip install -e .
 
     # 步驟 D: 開始跑測試
     # 這行指令會自動去尋找 tests/ 資料夾底下所有開頭是 test_ 的檔案並執行
