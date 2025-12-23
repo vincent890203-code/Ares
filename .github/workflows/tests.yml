@@ -41,4 +41,4 @@ jobs:
     # 這行指令會自動去尋找 tests/ 資料夾底下所有開頭是 test_ 的檔案並執行
     - name: Run tests with pytest
       run: |
-        pytest
+        pytest -W ignore::DeprecationWarning --cov=Ares
