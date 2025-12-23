@@ -37,39 +37,39 @@
 Ares-Project/
 │
 ├── .github/
-│   └── workflows/           # 未來放 CI/CD (GitHub Actions)
+│   └── workflows/           
 │       └── tests.yml
 │
-├── Ares/                    # [主程式包] 所有的核心程式碼都在這
-│   ├── __init__.py          # 讓 ares 變成一個 package (就是您之前設定 __all__ 的地方)
-│   ├── spider/              # [情報官]
+├── Ares/                    
+│   ├── __init__.py          
+│   ├── spider/              
 │   │   ├── __init__.py
 │   │   ├── core.py          # Driver setup, retry logic
 │   │   └── actions.py       # Specific scrolling/clicking
 │   │
-│   ├── refinery/            # [煉金術師]
+│   ├── refinery/            
 │   │   ├── __init__.py
 │   │   ├── cleaner.py       # Data cleaning logic
 │   │   └── transformer.py   # Feature engineering
 │   │
-│   └── brain/               # [大腦]
+│   └── brain/               
 │       ├── __init__.py
 │       ├── cortex.py        # Model logic (Wrapper Class)
 │       └── registry.py      # [新增] 用來管理模型版本的 (Model Registry)
 │
-├── tests/                   # [測試區] 這是身價 60k+ 的關鍵
+├── tests/                  
 │   ├── __init__.py
 │   ├── test_spider.py
 │   └── test_refinery.py
 │
-├── notebooks/               # [實驗區] 把您的 Jupyter Notebook 都丟進來，不要汙染根目錄
+├── notebooks/               
 │   └── experiment_v1.ipynb
 │
-├── .gitignore               # 忽略垃圾檔案 (__pycache__, .env)
-├── README.md                # 門面 (等下處理)
-├── requirements.txt         # 依賴套件 (pip freeze > requirements.txt)
-├── setup.py                 # [關鍵] 讓別人可以用 pip install 安裝您的工具
-└── Dockerfile               # [關鍵] 容器化設定 (明天處理)
+├── .gitignore               
+├── README.md                
+├── requirements.txt         
+├── setup.py                 
+└── Dockerfile               
 ```
 
 ---
