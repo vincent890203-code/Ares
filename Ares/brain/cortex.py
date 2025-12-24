@@ -4,6 +4,7 @@ import joblib
 from datetime import datetime
 import pandas as pd
 import numpy as np
+from .registry import ModelRegistry
 
 # 評分工具
 from sklearn.metrics import r2_score, accuracy_score 
@@ -16,10 +17,10 @@ from .weapons import (
 
 class ML_Brain:
     def __init__(self, memory_path="./brain_memory/"):
-        self.memory_path = memory_path
-        if not os.path.exists(memory_path):
-            os.makedirs(memory_path)
-        
+
+        # 初始化 Registry，把路徑交給它管
+        self.registry = ModelRegistry(memory_path)
+
         # 定義回歸武器 (可以直接實例化)
         self.regressors = [
             LinearRegressionWeapon(),
@@ -57,48 +58,35 @@ class ML_Brain:
 
     def _recall_memory(self, X_test, y_test, task_type, threshold):
         """
-        [內部功能] 搜尋記憶庫，讓每個舊模型出來跑測試數據
+        [修正後的讀取邏輯]
+        不再自己 glob 檔案，而是呼叫 self.registry.load_all_models()
         """
-        pkl_files = glob.glob(f"{self.memory_path}*.pkl")
-        if not pkl_files:
-            print("   -> Memory is empty.")
-            return None
-
         best_score = -float('inf')
-        best_model = None
+        best_model_payload = None
 
-        print("   -> Scanning memory files...")
-
-        for pkl_path in pkl_files:
+        # 關鍵差異：這裡改用 registry 的產生器，不再報錯找不到 memory_path
+        for name, model_core in self.registry.load_all_models():
             try:
-                # 載入模型
-                model = joblib.load(pkl_path)
-                model_name = os.path.basename(pkl_path)
+                # 這裡拿到的 model_core 是 sklearn 原生模型 (因為 base.py save 的是原生模型)
+                preds = model_core.predict(X_test)
 
-                # 讓舊模型跑新數據
-                res = model.predict(X_test)
-
-                # 計算分數
                 if task_type == 'classification':
-                    score = accuracy_score(y_test, res.predictions)
+                    score = accuracy_score(y_test, preds)
                 else:
-                    score = r2_score(y_test, res.predictions)
+                    score = r2_score(y_test, preds)
                 
-                print(f"      - Checking [{model_name}]... Score: {score:.4f}")
+                print(f"      - Checking [{name}]... Score: {score:.4f}")
 
-                # 記錄最強的舊模型
                 if score > best_score:
                     best_score = score
-                    best_model = model
+                    best_model_payload = model_core
 
             except Exception as e:
-                # 通常是欄位不符 (Schema Mismatch)
-                print(f"      - Skipping [{os.path.basename(pkl_path)}]: Incompatible data schema.")
+                print(f"      - Error checking [{name}]: {e}")
 
-        # 決策：是否採用
-        if best_model and best_score >= threshold:
-            print(f"   -> Found valid memory! Score {best_score:.4f} >= Threshold {threshold}")
-            return best_model
+        if best_model_payload and best_score >= threshold:
+            print(f"   -> Found valid memory! Score {best_score:.4f}")
+            return best_model_payload
         
         return None
 
@@ -115,11 +103,15 @@ class ML_Brain:
         if task_type == 'regression':
             candidates = self.regressors
             metric_name = "R2 Score"
+            scoring_metric = 'r2'
+
         elif task_type == 'classification':
             if label_map is None:
                 raise ValueError("[Error] Classification task requires label_map.")
+            # 每次都要重新建立新的實例，避免汙染
             candidates = [factory(label_map) for factory in self.classifier_factories]
             metric_name = "Accuracy"
+            scoring_metric = 'accuracy'
         else:
             raise ValueError("[Error] Unknown task type.")
 
@@ -127,8 +119,23 @@ class ML_Brain:
         for weapon in candidates:
             print(f"   - Training weapon: {weapon.model_name} ...", end=" ")
             try:
-                weapon.fit(X_train, y_train)
+                # ==========================================
+                # Day 3 新功能：超參數調優 (Hyperparameter Tuning)
+                # ==========================================
+                # 1. 取得該武器的參數網格
+                param_grid = getattr(weapon, 'get_default_param_grid', lambda: {})()
+                
+                # 2. 決定策略：有網格就 Optimize，沒網格就 Fit
+                if param_grid:
+                    # cv=3 代表做 3 折交叉驗證 (為了速度先設 3，正式可設 5)
+                    weapon.optimize(X_train, y_train, param_grid, cv=3, scoring=scoring_metric)
+                else:
+                    print(f"     (No param grid found, using default fit)")
+                    weapon.fit(X_train, y_train)
+
+                # 3. 驗證 (使用獨立的測試集)
                 res = weapon.predict(X_test)
+
                 
                 if task_type == 'regression':
                     score = r2_score(y_test, res.predictions)
@@ -146,17 +153,8 @@ class ML_Brain:
         # 結算
         if best_model:
             print(f"[Ares Training] Winner: [{best_model.model_name}] with Score: {best_score:.4f}")
-            self._memorize(best_model)
+            best_model.save(self.registry.memory_path)
             return best_model
         else:
             print("[Ares Training] All models failed.")
             return None
-
-    def _memorize(self, model):
-        """
-        [內部功能] 將模型存檔
-        """
-        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-        filename = f"{self.memory_path}best_{model.model_name}_{timestamp}.pkl"
-        joblib.dump(model, filename)
-        print(f"[Ares Memory] Model saved to: {filename}")
