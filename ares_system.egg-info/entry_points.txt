@@ -1,0 +1,2 @@
+[console_scripts]
+ares = Ares.cli:main

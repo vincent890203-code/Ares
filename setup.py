@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 # === 1. 設定專案資訊 ===
 PACKAGE_NAME = "ares-system" # 套件在 pip list 顯示的名稱
-VERSION = "0.1.0"
+VERSION = "0.5.0"
 AUTHOR = "Yuan-Chen Kuo"
 AUTHOR_EMAIL = "vincent890203@gmail.com" 
 DESCRIPTION = "An automated, modularized ML pipeline for biomedical data mining."
@@ -33,6 +33,15 @@ setup(
     
     install_requires=parse_requirements("requirements.txt"),
     python_requires=">=3.9",
+
+# 讓系統生成一個名為 'ares' 的可執行檔
+    entry_points={
+        'console_scripts': [
+            'ares=Ares.cli:main', 
+        ],
+    },
+
+
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

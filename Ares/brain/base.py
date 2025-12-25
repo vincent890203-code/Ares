@@ -139,7 +139,7 @@ class BaseAlgorithm(ABC):
             param_grid, 
             cv=cv, 
             scoring=scoring, 
-            n_jobs=-1,
+            n_jobs=1,
             verbose=0
         )
         
