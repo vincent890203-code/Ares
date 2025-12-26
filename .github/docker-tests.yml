@@ -1,0 +1,18 @@
+name: Ares System CI (Dockerized)
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  docker-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: docker build -t ares-app .
+
+      - name: Run Full Pipeline in Container
+        # 使用 -e 傳入環境變數，並執行全端測試腳本
+        run: docker run --rm -e GITHUB_ACTIONS=true ares-app python tests/full_pipeline_test.py
