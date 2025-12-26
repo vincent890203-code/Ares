@@ -1,0 +1,37 @@
+name: Ares System CI (Direct Execution)
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.9"
+
+    - name: Install Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y google-chrome-stable
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .
+
+    - name: Run Full Pipeline Test
+      env:
+        GITHUB_ACTIONS: true
+      run: |
+        # 放棄 pytest 搜尋，直接強迫 Python 執行指定路徑
+        python tests/full_pipeline_test.py
