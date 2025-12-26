@@ -1,4 +1,4 @@
-name: Ares System CI (Direct Execution)
+name: Ares System CI (Final Fix)
 
 on:
   push:
@@ -28,10 +28,12 @@ jobs:
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         pip install -e .
+        # 安裝 pytest 僅為了產出 Coverage 報告
+        pip install pytest pytest-cov 
 
     - name: Run Full Pipeline Test
       env:
         GITHUB_ACTIONS: true
       run: |
-        # 放棄 pytest 搜尋，直接強迫 Python 執行指定路徑
-        python tests/full_pipeline_test.py
+        # 核心修正：不讓 pytest 去「找」檔案，而是直接「餵」檔案給它
+        pytest tests/full_pipeline_test.py -v --cov=Ares
