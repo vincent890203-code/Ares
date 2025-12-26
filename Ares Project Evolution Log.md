@@ -1,14 +1,33 @@
 # 🛡️ Ares System: Full Development History
 
 > **Project Goal**: Building an End-to-End Biomedical Data Intelligence Agent.  
-> **Current Version**: v0.5.0 (Intelligence Phase)  
-> **Timeline**: 2025-12-18 to 2025-12-25  
-> **Author**: [Your Name]
-
+> **Current Version**: v1.0.0 (Intelligence Phase)  
+> **Timeline**: 2025-12-18 to 2025-12-26
+> **Author**: Yuan Chen Kuo
 ---
 
 ## 📅 Part 1: Version History (版本演進)
+### 🚀 Phase 4: Production & Deployment (生產部署與整合)
 
+**v1.1.0 - The Arsenal Integration** (Bonus: 2025/12/26)
+* **核心目標**: 驗證 Spider/Refinery/Brain 三部門的協同作戰能力 (End-to-End)。
+* **主要變動**:
+    * **[Feature] Spider Reinforcement**: 在 `actions.py` 新增 `smart_scroll` (應對 Lazy Loading) 與參數自適應偵錯。
+    * **[Test] Full Pipeline Verification**: 建立 `full_pipeline_test.py`，模擬從 PubChem 爬取到 QSAR 建模的完整流程。
+    * **[Tool] Introspection**: 開發 `inspect_ares.py`，實現對自身模組架構的動態盤點。
+
+**v1.0.0 - Containerization (Docker)** (Day 5: 2025/12/26)
+* **核心目標**: 實現「環境即代碼 (Infrastructure as Code)」，解決跨平台相依性問題。
+* **主要變動**:
+    * **[Infra] Docker Support**: 撰寫 `Dockerfile`，建立輕量級 Python 執行環境 (`ares-app:clean`)。
+    * **[CLI] Unified Interface**: 建立 `cli.py`，支援透過指令列 `python -m Ares.cli --task classification` 直接調度大腦。
+    * **[UX] Professional Logging**: 優化日誌系統，過濾 `FutureWarning` 與 `ConvergenceWarning`，提供清晰的任務報告。
+
+**v0.6.0 - Stress Testing** (Day 4: 2025/12/25)
+* **核心目標**: 測試系統在大規模運算下的穩定性與記憶體管理。
+* **主要變動**:
+    * **[Refine] Registry Optimization**: 優化模型儲存機制，確保在大量訓練迭代下不會發生 I/O 衝突。
+    * **[Fix] Parallel Processing**: 修正 Windows 環境下 Joblib 多工處理的鎖定問題。
 ### 🧠 Phase 3: Intelligence (賦予智慧)
 **v0.5.0 - The AutoML Upgrade** (Day 3: 2025/12/25)
 * **核心目標**: 讓 Ares 從「只會用預設參數」進化為「懂得自我優化」。
@@ -43,6 +62,10 @@
 **v0.1.0 - Proof of Concept (Project "DeepTox")** (2025/12/18)
 * **核心目標**: 驗證「網頁爬蟲 + 機器學習」的可行性。
 * **特點**: 單一腳本 (Monolithic Script)，硬編碼 (Hard-coded) 變數，無測試，難以維護。這是一切的起點。
+
+## 💡 Summary
+Ares 專案已完成從實驗腳本到 **生產級容器應用 (Production Container)** 的轉變。
+目前版本 (**v1.1.0**) 具備完整的 **爬蟲反偵測**、**自動化清洗** 與 **AutoML 建模** 能力，並可透過 Docker 在任何環境中一鍵部署。
 
 ---
 

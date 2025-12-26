@@ -1,6 +1,19 @@
 import logging
 import sys
 from datetime import datetime
+import warnings
+import os
+
+# 1. 忽略 Scikit-learn 常見的語法警告 (FutureWarning)
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
+# 2. 忽略模型未收斂的警告 (ConvergenceWarning)
+# 這在壓力測試或隨機數據中很常見，不影響功能
+from sklearn.exceptions import ConvergenceWarning
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
+
+# 3. 選填：禁止部分底層庫輸出雜訊
+os.environ['PYTHONWARNINGS'] = 'ignore'
 
 # 定義顏色 (ANSI Escape Codes)
 class LogColors:

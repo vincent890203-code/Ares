@@ -1,0 +1,24 @@
+# --- Python 編譯與開發快取 ---
+__pycache__/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- 本地實驗與測試資料 (不應包進正式環境) ---
+brain_memory/
+brain_memory_test/
+local_test/
+memories/
+notebooks/
+
+# --- 本地生成的 Log 與專案進度檔 ---
+ares_operation.log
+Ares Project Evolution Log.md
+
+
+# --- 套件安裝資訊 (您剛才問過的) ---
+ares.egg-info/
+ares_system.egg-info/
+scraper_ares.egg-info/
+build/
+dist/

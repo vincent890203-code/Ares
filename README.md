@@ -7,7 +7,7 @@
 
 > **"From Raw Data to Actionable Insights."**
 
-**Ares** 是一個模組化的全端數據智慧系統，專為生醫資料科學專案設計。它整合了**自動化爬蟲 (Spider)**、**資料清洗工廠 (Refinery)** 與 **自動化機器學習大腦 (Brain)**，實現從網頁數據擷取到模型預測的端到端 (End-to-End) 流程。
+**Ares** 是一個高度模組化、可容器化部署的全端數據智慧系統。它不僅是一個生醫分析工具，更是資深工程師的個人軍火庫，整合了**隱匿爬蟲 (Spider)**、**數據提煉工廠 (Refinery)** 與 **自動化機器學習大腦 (Brain)**。
 
 ---
 
@@ -41,11 +41,13 @@ Ares-Project/
 │       └── tests.yml
 │
 ├── Ares/                    
-│   ├── __init__.py          
+│   ├── __init__.py
+│   ├── cli.py               # [Entry] 統一指令列入口
 │   ├── spider/              
 │   │   ├── __init__.py
-│   │   ├── core.py          # Driver setup, retry logic
-│   │   └── actions.py       # Specific scrolling/clicking
+│   │   ├── core.py          # Driver setup, Retry logic
+│   │   ├── actions.py       # Tactical Actions (Scroll, Safe Click)
+│   │   └── extraction.py    # Parsing logic
 │   │
 │   ├── refinery/            
 │   │   ├── __init__.py
@@ -54,9 +56,10 @@ Ares-Project/
 │   │
 │   └── brain/               
 │       ├── __init__.py
-│       ├── cortex.py        # Model logic (Wrapper Class)
-│       └── registry.py      # [新增] 用來管理模型版本的 (Model Registry)
-│
+│       ├── cortex.py        # AutoML Orchestrator
+│       ├── registry.py      # Model Version Control
+│       └── weapons/         # Algorithm Factory (SVM, LR, KNN...)
+│   
 ├── tests/                  
 │   ├── __init__.py
 │   ├── test_spider.py
@@ -184,6 +187,21 @@ pip install -e .
 pytest --cov=Ares
 ```
 
+---
+
+## 🚀 Quick Start (Docker Mode)
+
+Ares 已經完全容器化，您可以無需安裝任何 Python 環境，直接透過 Docker 執行：
+
+```bash
+# 1. 建置映像檔
+docker build -t ares-app:clean .
+
+# 2. 執行分類任務 (自動化建模)
+docker run --rm ares-app:clean --task classification --data breast_cancer
+
+# 3. 執行自定義腳本 (例如爬蟲測試)
+docker run --rm --entrypoint python ares-app:clean tests/spider_test.py
 ---
 
 License: Private use only
