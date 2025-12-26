@@ -2,7 +2,6 @@
 
 ![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)
 ![License](https://img.shields.io/badge/license-Private-red.svg)
-![Tests](https://github.com/vincent890203-code/Ares/actions/workflows/tests.yml/badge.svg)
 ![Coverage](https://img.shields.io/badge/coverage-50%25-yellowgreen.svg)
 
 > **"From Raw Data to Actionable Insights."**
