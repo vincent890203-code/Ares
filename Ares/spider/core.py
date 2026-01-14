@@ -15,6 +15,13 @@ def setup_driver(headless=False, off_screen=True, load_images=True):
         options.add_argument("--window-position=-10000,0")
     if headless:
         options.add_argument("--headless=new")
+        # ⭐⭐⭐ [Docker CI 核心修正] ⭐⭐⭐
+        # 1. 允許在 root 權限下執行 (Docker 預設環境)
+        options.add_argument("--no-sandbox")
+        # 2. 解決 Docker /dev/shm 記憶體不足導致的崩潰
+        options.add_argument("--disable-dev-shm-usage")
+        # 3. 強制設定視窗大小，避免無頭模式下 RWD 版面錯亂找不到元素
+        options.add_argument("--window-size=1920,1080")
     if not load_images:
         prefs = {"profile.managed_default_content_settings.images": 2}
         options.add_experimental_option("prefs", prefs)
