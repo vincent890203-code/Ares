@@ -26,7 +26,7 @@ from sklearn.exceptions import ConvergenceWarning
 warnings.filterwarnings("ignore", category=UserWarning)
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 
-def run_ares_full_pipeline():
+def test_ares_full_pipeline():
     print(f"🚀 [ARES] 啟動全端整合演習 (模式: {'CI' if is_ci else '本地'})")
     print("=" * 60)
 
@@ -120,4 +120,4 @@ def run_ares_full_pipeline():
         print(f"❌ 建模失敗: {e}")
 
 if __name__ == "__main__":
-    run_ares_full_pipeline()
+    test_ares_full_pipeline()
