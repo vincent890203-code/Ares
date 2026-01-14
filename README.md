@@ -3,6 +3,8 @@
 ![Python Version](https://img.shields.io/badge/python-3.9+-blue.svg)
 ![License](https://img.shields.io/badge/license-Private-red.svg)
 ![Coverage](https://img.shields.io/badge/coverage-50%25-yellowgreen.svg)
+[![Ares Python CI](https://github.com/vincent890203-code/Ares/actions/workflows/python-tests.yml/badge.svg)](https://github.com/vincent890203-code/Ares/actions/workflows/python-tests.yml)
+[![Ares Docker CI](https://github.com/vincent890203-code/Ares/actions/workflows/docker-tests.yml/badge.svg)](https://github.com/vincent890203-code/Ares/actions/workflows/docker-tests.yml)
 
 > **"From Raw Data to Actionable Insights."**
 
