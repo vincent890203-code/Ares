@@ -17,3 +17,7 @@ local_test/
 # 專案套件資訊
 ares.egg-info/
 scraper_ares.egg-info/
+
+# 私密檔案:
+.env
+*.csv
