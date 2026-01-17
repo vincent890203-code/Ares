@@ -8,3 +8,6 @@ setuptools
 webdriver-manager
 selenium
 seaborn
+langchain-google-genai
+python-dotenv
+tabulate
