@@ -6,8 +6,10 @@ beautifulsoup4
 pytest
 setuptools
 webdriver-manager
-selenium
 seaborn
 langchain-google-genai
+langchain-chroma
 python-dotenv
 tabulate
+streamlit
+plotly

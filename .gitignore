@@ -1,23 +1,40 @@
-# Python 垃圾檔
+# === Python 系統垃圾檔 ===
 __pycache__/
 *.py[cod]
+.DS_Store
 
-# 資料與模型 (除了我們特別指定的，一律不傳)
+# === 安全與隱私 (絕對不能上傳) ===
+.env
+secrets.json
+
+# === 資料數據 (銀行帳單、原始資料) ===
 data/
-models/
-*.pkl
+local_test/
 *.csv
 *.xlsx
+*.xls
 
-# 環境設定 (包含密碼，絕對不能傳)
-.env
+# === Ares 大腦與記憶 (RAG & ML State) ===
+# [新增] 向量資料庫實體 (ChromaDB)，這是最佔空間且含隱私的資料
+ares_knowledge_store/
 
-local_test/
+# [新增] 機器學習模型存檔 (ML Brain)
+brain_memory/
+models/
+*.pkl
+*.joblib
 
-# 專案套件資訊
+# === 系統日誌與紀錄 ===
+# [新增] 避免上傳運行紀錄
+ares_operation.log
+*.log
+
+# === 專案套件資訊 ===
 ares.egg-info/
 scraper_ares.egg-info/
+ares_system.egg-info/
 
-# 私密檔案:
-.env
-*.csv
+# === 虛擬環境 ===
+env/
+venv/
+.anaconda/

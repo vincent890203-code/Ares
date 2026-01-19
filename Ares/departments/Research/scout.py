@@ -174,14 +174,94 @@ class PubMedScout:
                     else:
                         link = ""
                     
-                    # 提取摘要片段
-                    snippet_elem = item.find('div', class_='full-view-snippet')
-                    if not snippet_elem:
-                        snippet_elem = item.find('p', class_='docsum-snippet')
-                    if not snippet_elem:
-                        snippet_elem = item.find('div', class_='snippet')
+                    # 提取摘要片段（嘗試多種選擇器）
+                    snippet = "無摘要"
+                    snippet_elem = None
                     
-                    snippet = snippet_elem.get_text(strip=True) if snippet_elem else "無摘要"
+                    # 嘗試多種可能的摘要選擇器
+                    selectors = [
+                        ('div', 'full-view-snippet'),
+                        ('p', 'docsum-snippet'),
+                        ('div', 'snippet'),
+                        ('div', 'abstract'),
+                        ('p', 'abstract'),
+                        ('div', {'class': lambda x: x and 'snippet' in x.lower()}),
+                        ('p', {'class': lambda x: x and 'snippet' in x.lower()}),
+                    ]
+                    
+                    for tag, selector in selectors:
+                        try:
+                            if isinstance(selector, str):
+                                snippet_elem = item.find(tag, class_=selector)
+                            else:
+                                snippet_elem = item.find(tag, selector)
+                            if snippet_elem:
+                                snippet = snippet_elem.get_text(strip=True)
+                                if snippet and len(snippet) > 10:
+                                    break
+                        except:
+                            continue
+                    
+                    # 如果還是找不到摘要，嘗試從所有文字中提取
+                    if not snippet or snippet == "無摘要" or len(snippet) < 10:
+                        # 嘗試找到包含摘要文字的區域
+                        all_text = item.get_text(separator=' ', strip=True)
+                        # 尋找可能包含摘要的部分（通常在標題之後）
+                        if title and title in all_text:
+                            parts = all_text.split(title, 1)
+                            if len(parts) > 1:
+                                potential_snippet = parts[1].strip()
+                                # 如果潛在摘要長度合理，使用它
+                                if len(potential_snippet) > 20 and len(potential_snippet) < 1000:
+                                    snippet = potential_snippet[:500]  # 限制長度
+                    
+                    # 如果摘要仍然太短，嘗試訪問論文詳細頁面獲取完整摘要
+                    # 注意：這會增加處理時間，所以只在必要時執行
+                    if (not snippet or snippet == "無摘要" or len(snippet) < 20) and link:
+                        try:
+                            # 保存當前 URL
+                            current_url = self.driver.current_url
+                            
+                            # 訪問論文詳細頁面
+                            self.driver.get(link)
+                            time.sleep(2)
+                            detail_page = BeautifulSoup(self.driver.page_source, 'html.parser')
+                            
+                            # 嘗試提取完整摘要
+                            abstract_selectors = [
+                                ('div', {'id': 'abstract'}),
+                                ('div', {'class': 'abstract'}),
+                                ('section', {'class': 'abstract'}),
+                                ('div', {'class': lambda x: x and 'abstract' in x.lower()}),
+                                ('div', {'id': lambda x: x and 'abstract' in x.lower()}),
+                            ]
+                            
+                            for tag, selector in abstract_selectors:
+                                abstract_elem = detail_page.find(tag, selector)
+                                if abstract_elem:
+                                    abstract_text = abstract_elem.get_text(separator=' ', strip=True)
+                                    if abstract_text and len(abstract_text) > 20:
+                                        snippet = abstract_text[:1000]  # 限制長度
+                                        break
+                            
+                            # 如果還是找不到，嘗試從頁面中搜索包含 "Background" 或 "Objective" 的段落
+                            if not snippet or snippet == "無摘要" or len(snippet) < 20:
+                                all_paragraphs = detail_page.find_all(['p', 'div'])
+                                for para in all_paragraphs:
+                                    text = para.get_text(strip=True)
+                                    if text and len(text) > 50:
+                                        # 檢查是否包含摘要相關的關鍵字
+                                        if any(keyword in text.lower() for keyword in ['background', 'objective', 'method', 'result', 'conclusion']):
+                                            snippet = text[:1000]
+                                            break
+                            
+                            # 返回結果列表頁面
+                            self.driver.get(current_url)
+                            time.sleep(1)
+                        except Exception as e:
+                            # 如果訪問詳細頁面失敗，繼續使用現有摘要
+                            print(f"   [警告] 無法從詳細頁面提取摘要：{str(e)}")
+                            pass
                     
                     results.append({
                         'title': title,

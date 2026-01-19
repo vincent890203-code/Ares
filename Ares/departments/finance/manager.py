@@ -4,6 +4,7 @@
 此模組提供完整的財務數據處理流程，整合資料載入、AI 分類與結果輸出。
 """
 
+import time
 import pandas as pd
 from tqdm import tqdm
 from typing import Optional

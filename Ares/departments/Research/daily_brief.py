@@ -40,11 +40,11 @@ class ResearchPublisher:
         markdown_content = []
         
         # 1. 標題
-        markdown_content.append(f"# 🔬 Ares Research Daily Brief\nDate: {current_date}\n")
+        markdown_content.append(f"# Ares Research Daily Brief\nDate: {current_date}\n")
         
         # 2. 目錄 (Table of Contents)
         if papers:
-            markdown_content.append("## 📑 Table of Contents\n")
+            markdown_content.append("## Table of Contents\n")
             for i, paper in enumerate(papers, 1):
                 title = paper.get('title', f'Paper {i}')
                 # 創建錨點連結（Markdown 標題自動生成錨點）
@@ -93,7 +93,7 @@ class ResearchPublisher:
             # 如果有錯誤信息，顯示出來
             if 'error' in analysis:
                 error_msg = analysis.get('error', '未知錯誤')
-                markdown_content.append(f"\n*⚠️ 分析錯誤：{error_msg}*\n")
+                markdown_content.append(f"\n*[!] 分析錯誤：{error_msg}*\n")
             
             # 論文連結
             if link:
@@ -117,7 +117,7 @@ class ResearchPublisher:
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(full_content)
             
-            print(f"✅ 日報已成功發布至：{output_path.absolute()}")
+            print(f"[OK] 日報已成功發布至：{output_path.absolute()}")
             
         except IOError as e:
             raise IOError(f"無法寫入檔案 {filename}：{str(e)}") from e

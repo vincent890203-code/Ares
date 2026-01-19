@@ -103,15 +103,77 @@ class ResearchEditor:
             response = self.llm.invoke(prompt)
             
             # 取得回應內容（處理多種可能的回應格式）
-            if isinstance(response, list):
+            response_text = None
+            
+            # 情況 1: 回應是字典格式 {'type': 'text', 'text': '...'}
+            if isinstance(response, dict):
+                if 'text' in response:
+                    response_text = response['text']
+                elif 'content' in response:
+                    response_text = response['content']
+                else:
+                    # 如果字典中沒有 text 或 content，嘗試轉為字串並提取 JSON
+                    response_str = str(response)
+                    # 檢查是否是字典的字符串表示，嘗試提取內部的 text 值
+                    if "'text'" in response_str or '"text"' in response_str:
+                        # 使用正則提取 text 字段的值
+                        match = re.search(r'["\']text["\']\s*:\s*["\']([^"\']+)["\']', response_str)
+                        if match:
+                            response_text = match.group(1)
+                        else:
+                            response_text = response_str
+                    else:
+                        response_text = response_str
+            # 情況 2: 回應是列表
+            elif isinstance(response, list):
                 # 如果回應是列表，取第一個元素
                 first_item = response[0] if response else None
                 if first_item is not None:
-                    response_text = first_item.content if hasattr(first_item, 'content') else str(first_item)
+                    # 檢查第一個元素是否為字典
+                    if isinstance(first_item, dict):
+                        response_text = first_item.get('text') or first_item.get('content')
+                        if not response_text:
+                            response_text = str(first_item)
+                    elif hasattr(first_item, 'content'):
+                        content = first_item.content
+                        # 如果 content 是字典，提取 text
+                        if isinstance(content, dict):
+                            response_text = content.get('text') or str(content)
+                        else:
+                            response_text = content
+                    else:
+                        response_text = str(first_item)
                 else:
                     response_text = ""
+            # 情況 3: 回應有 content 屬性
             elif hasattr(response, 'content'):
-                response_text = response.content
+                content = response.content
+                # 如果 content 是字典，提取 text
+                if isinstance(content, dict):
+                    response_text = content.get('text') or str(content)
+                else:
+                    response_text = content
+            # 情況 4: 回應是字符串（可能是字典的字符串表示）
+            elif isinstance(response, str):
+                # 檢查是否是字典的字符串表示
+                if response.strip().startswith('{') or response.strip().startswith("{"):
+                    # 嘗試解析為字典
+                    try:
+                        parsed = eval(response)  # 小心使用 eval，但在這裡是安全的
+                        if isinstance(parsed, dict) and 'text' in parsed:
+                            response_text = parsed['text']
+                        else:
+                            response_text = response
+                    except:
+                        # 如果解析失敗，嘗試用正則提取
+                        match = re.search(r'["\']text["\']\s*:\s*["\']([^"\']+)["\']', response)
+                        if match:
+                            response_text = match.group(1)
+                        else:
+                            response_text = response
+                else:
+                    response_text = response
+            # 情況 5: 其他格式，轉為字串
             else:
                 response_text = str(response)
             
@@ -119,12 +181,88 @@ class ResearchEditor:
             if not isinstance(response_text, str):
                 response_text = str(response_text)
             
+            # 特殊處理：如果 response_text 看起來像是字典的字符串表示，嘗試提取 text 字段
+            if response_text.strip().startswith("{'type':") or response_text.strip().startswith('{"type":') or "'text'" in response_text or '"text"' in response_text:
+                try:
+                    # 首先嘗試用 ast.literal_eval 安全地解析 Python 字面量
+                    import ast
+                    parsed_dict = ast.literal_eval(response_text)
+                    if isinstance(parsed_dict, dict) and 'text' in parsed_dict:
+                        response_text = parsed_dict['text']
+                        # 確保提取的是字串
+                        if not isinstance(response_text, str):
+                            response_text = str(response_text)
+                except (ValueError, SyntaxError):
+                    # 如果 ast.literal_eval 失敗，使用正則提取
+                    # 優先匹配雙引號格式 "text": "{...}"
+                    # 匹配 "text": "..." 或 'text': '...'，支持多行和嵌套 JSON
+                    # 先嘗試匹配雙引號格式（更常見）
+                    pattern1 = r'["\']text["\']\s*:\s*"((?:[^"\\]|\\.|\\n)*)"'
+                    text_match = re.search(pattern1, response_text, re.DOTALL)
+                    
+                    if not text_match:
+                        # 嘗試匹配單引號格式
+                        pattern2 = r'["\']text["\']\s*:\s*\'((?:[^\'\\]|\\.|\\n)*)\''
+                        text_match = re.search(pattern2, response_text, re.DOTALL)
+                    
+                    if not text_match:
+                        # 嘗試更寬鬆的模式：匹配到第一個引號到最後一個引號之間的所有內容
+                        # 這用於處理嵌套的 JSON 字串
+                        pattern3 = r'["\']text["\']\s*:\s*["\']((?:[^"\']|\\["\']|\\n)+?)["\']'
+                        text_match = re.search(pattern3, response_text, re.DOTALL)
+                    
+                    if text_match:
+                        response_text = text_match.group(1)
+                        # 移除可能的轉義字符
+                        response_text = response_text.replace('\\n', '\n').replace("\\'", "'").replace('\\"', '"')
+                    else:
+                        # 如果正則也失敗，嘗試直接查找 JSON 對象（以 { 開頭的部分）
+                        json_start = response_text.find('{"')
+                        if json_start == -1:
+                            json_start = response_text.find("{'")
+                        if json_start != -1:
+                            # 找到最後一個 } 的位置
+                            json_end = response_text.rfind('}')
+                            if json_end > json_start:
+                                response_text = response_text[json_start:json_end+1]
+            
             # 清理回應文字（移除可能的 markdown 格式）
             response_text = self._clean_json_response(response_text)
             
             # 調試：如果解析失敗，記錄原始回應（僅在開發時使用）
             if not response_text or response_text.strip() == "":
                 return self._get_default_response("AI 回應為空")
+            
+            # 如果 response_text 仍然包含 Python 字典格式（如 {'type': 'text', 'text': '...'}），再次嘗試提取
+            if (response_text.strip().startswith("{'") or response_text.strip().startswith('{"')) and ('"text"' in response_text or "'text'" in response_text):
+                # 檢查是否包含嵌套的 JSON（text 字段的值是 JSON 字串）
+                try:
+                    import ast
+                    parsed = ast.literal_eval(response_text)
+                    if isinstance(parsed, dict) and 'text' in parsed:
+                        inner_text = parsed['text']
+                        if isinstance(inner_text, str) and (inner_text.strip().startswith('{') or inner_text.strip().startswith('[')):
+                            response_text = inner_text
+                except:
+                    # 使用正則提取內部的 JSON
+                    # 尋找 "text": "{" 或 'text': '{' 後面的內容
+                    pattern = r'["\']text["\']\s*:\s*["\']?(\{.*\})["\']?'
+                    match = re.search(pattern, response_text, re.DOTALL)
+                    if match:
+                        potential_json = match.group(1)
+                        # 嘗試找到完整的 JSON 對象
+                        brace_count = 0
+                        json_end = -1
+                        for i, char in enumerate(potential_json):
+                            if char == '{':
+                                brace_count += 1
+                            elif char == '}':
+                                brace_count -= 1
+                                if brace_count == 0:
+                                    json_end = i + 1
+                                    break
+                        if json_end > 0:
+                            response_text = potential_json[:json_end]
             
             # 解析 JSON
             try:
@@ -134,10 +272,33 @@ class ResearchEditor:
                 fixed_text = self._fix_json_format(response_text)
                 try:
                     result = json.loads(fixed_text)
-                except json.JSONDecodeError:
-                    # 如果修復後仍然失敗，返回詳細錯誤
-                    error_msg = f"JSON 解析失敗：{str(json_err)}。原始回應前 200 字元：{response_text[:200]}"
-                    return self._get_default_response(error_msg)
+                except json.JSONDecodeError as json_err2:
+                    # 如果修復後仍然失敗，嘗試更激進的修復
+                    # 提取第一個完整的 JSON 對象
+                    json_start = fixed_text.find('{')
+                    if json_start != -1:
+                        # 找到匹配的結束括號
+                        brace_count = 0
+                        json_end = -1
+                        for i in range(json_start, len(fixed_text)):
+                            if fixed_text[i] == '{':
+                                brace_count += 1
+                            elif fixed_text[i] == '}':
+                                brace_count -= 1
+                                if brace_count == 0:
+                                    json_end = i + 1
+                                    break
+                        if json_end > json_start:
+                            try:
+                                result = json.loads(fixed_text[json_start:json_end])
+                            except:
+                                # 如果還是失敗，返回詳細錯誤
+                                error_msg = f"JSON 解析失敗：{str(json_err2)}。原始回應前 300 字元：{response_text[:300]}"
+                                return self._get_default_response(error_msg)
+                    else:
+                        # 如果修復後仍然失敗，返回詳細錯誤
+                        error_msg = f"JSON 解析失敗：{str(json_err2)}。原始回應前 300 字元：{response_text[:300]}"
+                        return self._get_default_response(error_msg)
             
             # 驗證結果格式
             if not isinstance(result, dict):
